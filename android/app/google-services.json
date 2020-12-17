@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "435826305689",
+    "firebase_url": "https://notes-91113.firebaseio.com",
+    "project_id": "notes-91113",
+    "storage_bucket": "notes-91113.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:435826305689:android:bfe3de1aeb51a075422608",
+        "android_client_info": {
+          "package_name": "com.kanjikart.notes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "435826305689-kee6pekpcoa8gq7aclqj8i1sggq05p2a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvwng3jLkNgu48a8pKWR7HFCsYhG3YmNA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "435826305689-kee6pekpcoa8gq7aclqj8i1sggq05p2a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
