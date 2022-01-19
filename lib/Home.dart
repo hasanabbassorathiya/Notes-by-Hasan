@@ -79,6 +79,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
         primary: true,
 
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           primary: true,
           title: Text(
             'Notes',

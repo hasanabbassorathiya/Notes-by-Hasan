@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:notes/Controller/userController.dart';
+import 'package:notes/Home.dart';
 import 'package:notes/Services/Database.dart';
 import 'package:notes/models/UserModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,7 +33,7 @@ class AuthController extends GetxController {
       );
       if (await Database().createNewUser(_user)) {
         Get.find<UserController>().userModel = _user;
-        Get.back();
+        Get.to(Home());
       }
     } catch (e) {
       Get.snackbar('Error creating account', e.toString(),
@@ -48,6 +49,7 @@ class AuthController extends GetxController {
           email: email.trim(), password: password);
       Get.find<UserController>().userModel =
           await Database().getUser(authResult.user.uid);
+      Get.to(Home());
     } catch (e) {
       Get.snackbar('Error While Logging', e.toString(),
           snackPosition: SnackPosition.BOTTOM,

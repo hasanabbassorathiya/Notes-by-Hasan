@@ -1,12 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:notes/Controller/updateNoteController.dart';
 import 'package:notes/Services/Database.dart';
 import 'package:notes/models/NotesModel.dart';
+
+import 'Home.dart';
 
 class NoteEditor extends StatefulWidget {
   @override
@@ -32,9 +35,10 @@ class _NoteEditorState extends State<NoteEditor> {
   Color currentColor = Colors.white;
   Note note;
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-
+  List<Color> colors1 = [];
   @override
   void initState() {
+    GenerateColor();
     if (Get.put<UpdateNoteController>(UpdateNoteController()).isUpdate.value ==
         true) {
       isNew();
@@ -76,6 +80,15 @@ class _NoteEditorState extends State<NoteEditor> {
 
         print(_contentTextController.text);
       });
+    }
+  }
+
+  GenerateColor() {
+    for (int i = 0; i < 4000; i++) {
+      Color _randomColor =
+          Colors.primaries[Random().nextInt(Colors.primaries.length)]
+              [Random().nextInt(9) * 100];
+      colors1.add(_randomColor);
     }
   }
 
@@ -155,27 +168,20 @@ class _NoteEditorState extends State<NoteEditor> {
     }
   }
 
-  final colors = [
-    Color(0xffffffff), // classic white
-    Color(0xfff28b81), // light pink
-    Color(0xfff7bd02), // yellow
-    Color(0xfffbf476), // light yellow
-    Color(0xffcdff90), // light green
-    Color(0xffa7feeb), // turquoise
-    Color(0xffcbf0f8), // light cyan
-    Color(0xffafcbfa), // light blue
-    Color(0xffd7aefc), // plum
-    Color(0xfffbcfe9), // misty rose
-    Color(0xffe6c9a9), // light brown
-    Color(0xffe9eaee) // light gray
-  ];
   DateFormat dateFormat;
   DateFormat timeFormat;
 
-  final _check = Icon(Icons.check);
+  final _check = Icon(
+    Icons.check,
+    color: Colors.black,
+    size: 20,
+  );
   int indexOfCurrentColor;
 
   Widget _checkOrNot(int index) {
+    indexOfCurrentColor =
+        colors1.indexWhere((element) => element == pickerColor);
+
     if (indexOfCurrentColor == index) {
       return _check;
     }
@@ -191,10 +197,33 @@ class _NoteEditorState extends State<NoteEditor> {
       child: new Wrap(
         children: <Widget>[
           new ListTile(
-              leading: new Icon(Icons.delete),
-              title: new Text('Delete permanently'),
+              leading: new Icon(
+                  (Get.put<UpdateNoteController>(UpdateNoteController())
+                              .isUpdate
+                              .value ==
+                          true)
+                      ? Icons.delete
+                      : Icons.cancel_outlined),
+              title: new Text(
+                  (Get.put<UpdateNoteController>(UpdateNoteController())
+                              .isUpdate
+                              .value ==
+                          true)
+                      ? 'Delete permanently'
+                      : 'Discard'),
               onTap: () {
-                Navigator.of(context).pop();
+                if (Get.put<UpdateNoteController>(UpdateNoteController())
+                        .isUpdate
+                        .value ==
+                    true) {
+                  var up = Get.put<UpdateNoteController>(UpdateNoteController())
+                      .upateNoteModel;
+
+                  Database().deleteNotes(up.id);
+                  Get.to(Home());
+                } else {
+                  Get.to(Home());
+                }
               }),
           new ListTile(
               leading: new Icon(Icons.content_copy),
@@ -215,25 +244,30 @@ class _NoteEditorState extends State<NoteEditor> {
               width: MediaQuery.of(context).size.width,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                children: List.generate(colors.length, (index) {
+                children: List.generate(colors1.length, (index) {
                   return GestureDetector(
-                      onTap: () => changeColor(colors[index]),
-                      child: Padding(
-                          padding: EdgeInsets.only(left: 6, right: 6),
-                          child: Container(
-                              child: new CircleAvatar(
-                                child: _checkOrNot(index),
-                                foregroundColor: foregroundColor,
-                                backgroundColor: colors[index],
-                              ),
-                              width: 38.0,
-                              height: 38.0,
-                              padding: const EdgeInsets.all(1.0),
-                              // border width
-                              decoration: new BoxDecoration(
-                                color: borderColor, // border color
-                                shape: BoxShape.circle,
-                              ))));
+                    onTap: () {
+                      changeColor(colors1[index]);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 6, right: 6),
+                      child: Container(
+                        child: new CircleAvatar(
+                          child: _checkOrNot(index),
+                          foregroundColor: foregroundColor,
+                          backgroundColor: colors1[index],
+                        ),
+                        width: 38.0,
+                        height: 38.0,
+                        padding: const EdgeInsets.all(1.0),
+                        // border width
+                        decoration: BoxDecoration(
+                          color: borderColor, // border color
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  );
                 }),
               ),
             ),
@@ -244,7 +278,7 @@ class _NoteEditorState extends State<NoteEditor> {
               SizedBox(
                 height: 44,
                 child: Center(
-                  child: Text(''),
+                  child: Text('Made By Hasan Abbas Sorathiya'),
                 ),
               ),
             ],
@@ -276,6 +310,7 @@ class _NoteEditorState extends State<NoteEditor> {
                           return Modo();
                         });
                   });
+                  setState(() {});
                 },
                 child: Icon(
                   Icons.more_vert,
@@ -294,37 +329,37 @@ class _NoteEditorState extends State<NoteEditor> {
                     ? updateNote()
                     : sendNewNote();
               }),
-          IconButton(
-            icon: CircleAvatar(
-              backgroundColor: pickerColor == Colors.black
-                  ? Colors.white.withOpacity(0.8)
-                  : Colors.black.withOpacity(0.8),
-              radius: 14,
-              child: CircleAvatar(
-                radius: 10,
-                backgroundColor: pickerColor,
-                foregroundColor: Colors.white,
-              ),
-            ),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text(
-                      'Select a color',
-                    ),
-                    content: SingleChildScrollView(
-                      child: BlockPicker(
-                        pickerColor: currentColor,
-                        onColorChanged: changeColor,
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
+          // IconButton(
+          //   icon: CircleAvatar(
+          //     backgroundColor: pickerColor == Colors.black
+          //         ? Colors.white.withOpacity(0.8)
+          //         : Colors.black.withOpacity(0.8),
+          //     radius: 14,
+          //     child: CircleAvatar(
+          //       radius: 10,
+          //       backgroundColor: pickerColor,
+          //       foregroundColor: Colors.white,
+          //     ),
+          //   ),
+          //   onPressed: () {
+          //     showDialog(
+          //       context: context,
+          //       builder: (BuildContext context) {
+          //         return AlertDialog(
+          //           title: Text(
+          //             'Select a color',
+          //           ),
+          //           content: SingleChildScrollView(
+          //             child: BlockPicker(
+          //               pickerColor: currentColor,
+          //               onColorChanged: changeColor,
+          //             ),
+          //           ),
+          //         );
+          //       },
+          //     );
+          //   },
+          // ),
         ],
       ),
       backgroundColor: pickerColor,

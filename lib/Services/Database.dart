@@ -44,7 +44,7 @@ class Database {
         .getDocuments();
     print('total notes presented : ' + data.documents.length.toString());
     DateTime date = DateTime.now();
-    print(data.documents[0]['id'].runtimeType);
+
     int getLastID =
         data.documents.isEmpty ? 1 : int.parse(data.documents[0]['id']);
     print('last note id : ' + getLastID.toString());
@@ -114,7 +114,7 @@ class Database {
     }
   }
 
-  void addCategories() async {}
+  void addCategories(title, content) async {}
 
   void removeCategories() async {}
 

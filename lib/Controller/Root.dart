@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:notes/Controller/authController.dart';
 import 'package:notes/Controller/userController.dart';
 import 'package:notes/Home.dart';
-import 'package:notes/login.dart';
+import 'package:notes/Screens/login/login.dart';
 
 class Root extends GetWidget<AuthController> {
   @override
@@ -14,7 +14,7 @@ class Root extends GetWidget<AuthController> {
       if (Get.find<AuthController>().user != null) {
         return Home();
       } else {
-        return Login();
+        return LoginScreen();
       }
     });
   }
