@@ -61,7 +61,14 @@ class _NoteEditorState extends State<NoteEditor> {
     Color otherColor = new Color(value);
     return otherColor;
   }
-
+  GenerateColor() {
+    for (int i = 0; i < 4000; i++) {
+      Color _randomColor =
+      Colors.primaries[Random().nextInt(Colors.primaries.length)]
+      [Random().nextInt(9) * 100];
+      colors1.add(_randomColor);
+    }
+  }
   isNew() {
     var up =
         Get.put<UpdateNoteController>(UpdateNoteController()).upateNoteModel;
@@ -83,14 +90,7 @@ class _NoteEditorState extends State<NoteEditor> {
     }
   }
 
-  GenerateColor() {
-    for (int i = 0; i < 4000; i++) {
-      Color _randomColor =
-          Colors.primaries[Random().nextInt(Colors.primaries.length)]
-              [Random().nextInt(9) * 100];
-      colors1.add(_randomColor);
-    }
-  }
+
 
   sendNewNote() async {
     try {
@@ -307,7 +307,11 @@ class _NoteEditorState extends State<NoteEditor> {
                     showModalBottomSheet(
                         context: context,
                         builder: (BuildContext ctx) {
-                          return Modo();
+                          return StatefulBuilder(builder:
+                              (BuildContext context, StateSetter setState) {
+                            setState(() {});
+                            return Modo();
+                          });
                         });
                   });
                   setState(() {});

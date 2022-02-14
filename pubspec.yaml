@@ -32,7 +32,10 @@ dependencies:
   firebase_storage:
   flutter_staggered_grid_view:
   flutter_colorpicker: ^0.3.4
-  pull_to_refresh: ^1.6.2
+  pull_to_refresh: 1.6.2
+  flutter_quill:
+  image_picker: 0.6.7+22
+  share_files_and_screenshot_widgets:
 
 
 

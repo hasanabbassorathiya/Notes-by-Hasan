@@ -1,19 +1,25 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_quill/models/documents/document.dart';
+import 'package:flutter_quill/widgets/controller.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:get/get.dart';
 import 'package:notes/Controller/Styles.dart';
 import 'package:notes/Controller/updateNoteController.dart';
-import 'package:notes/NotesCard.dart';
+import 'package:notes/Controller/userController.dart';
+import 'package:notes/Screens/Editor/editor.dart';
 import 'package:notes/Services/Database.dart';
+import 'package:notes/components/navigation_drawer_widget.dart';
 import 'package:notes/models/NotesModel.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'Controller/authController.dart';
+import 'components/searchDelegate.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -30,13 +36,16 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
   var id;
 
   RefreshController _refreshController = RefreshController(
-    initialRefresh: true,
+    initialRefresh: false,
   );
 
   getData() async {
     prefs = await SharedPreferences.getInstance();
-    fullname = prefs.getString('name') ?? 'User';
     id = prefs.getString('id');
+    Get.find<UserController>().userModel = await Database().getUser(id);
+    fullname = prefs.getString('name') ?? 'User';
+
+    Get.put(UserController()).userModel.name = fullname;
     setState(() {
       stream = Firestore.instance
           .collection("users")
@@ -47,6 +56,7 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
       isSwitched = prefs.getBool('isDarkTheme') ?? false;
     });
     _refreshController.loadComplete();
+    setState(() {});
   }
 
   getMode() async {
@@ -64,6 +74,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return timeago.format(t.toDate(), locale: 'en_long', allowFromNow: true);
   }
 
+  final GlobalKey<ScaffoldState> _key = GlobalKey(); // Create a key
+
   @override
   void initState() {
     getData();
@@ -76,35 +88,35 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
     return RefreshConfiguration(
       enableLoadingWhenFailed: true,
       child: Scaffold(
+        key: _key,
         primary: true,
-
         appBar: AppBar(
-          automaticallyImplyLeading: false,
           primary: true,
           title: Text(
-            'Notes',
+            'Dashboard',
             style: Theme.of(context).textTheme.headline5,
             overflow: TextOverflow.ellipsis,
           ),
           elevation: 0,
-          actions: [
-            IconButton(
-              color: Theme.of(context).iconTheme.color,
-              icon: !isSwitched
-                  ? Icon(Icons.wb_sunny)
-                  : Icon(Icons.nights_stay_outlined),
-              onPressed: () {
-                getMode();
-              },
-            ),
-            FlatButton(
-                onPressed: () {
-                  Get.find<AuthController>().signOut();
-                },
-                child: Icon(Icons.exit_to_app)),
-          ],
+          centerTitle: true,
+          // actions: [
+          //   IconButton(
+          //     color: Theme.of(context).iconTheme.color,
+          //     icon: !isSwitched
+          //         ? Icon(Icons.wb_sunny)
+          //         : Icon(Icons.nights_stay_outlined),
+          //     onPressed: () {
+          //       getMode();
+          //     },
+          //   ),
+          //   FlatButton(
+          //       onPressed: () {
+          //         Get.find<AuthController>().signOut();
+          //       },
+          //       child: Icon(Icons.exit_to_app)),
+          // ],
         ),
-        // backgroundColor: Theme.of(context).backgroundColor,
+        drawer: NavigationDrawerWidget(),
         floatingActionButton: FloatingActionButton(
           child: Icon(
             Icons.add,
@@ -114,25 +126,19 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             Get.put<UpdateNoteController>(UpdateNoteController())
                 .isUpdate
                 .value = false;
-            Get.to(NoteEditor());
+            Get.to(HomePage());
           },
         ),
         body: SmartRefresher(
           controller: _refreshController,
-          enablePullUp: true,
           physics: BouncingScrollPhysics(),
           onRefresh: () async {
-            //monitor fetch data from network
-            await Future.delayed(Duration(milliseconds: 1000));
-
             if (mounted) setState(() {});
             await getData();
+
             _refreshController.refreshCompleted();
           },
           onLoading: () async {
-            //monitor fetch data from network
-            await Future.delayed(Duration(milliseconds: 180));
-
             if (mounted) setState(() {});
             await getData();
             _refreshController.loadFailed();
@@ -151,24 +157,6 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                         style: Theme.of(context).textTheme.headline5,
                       ),
                     ),
-                    // Switch(
-                    //   value: isSwitched,
-                    //   onChanged: (value) async {
-                    //     prefs = await SharedPreferences.getInstance();
-                    //
-                    //     setState(() {
-                    //       isSwitched = value;
-                    //
-                    //       prefs.setBool('isDarkTheme', value);
-                    //       Get.changeTheme(
-                    //           Styles.themeData(isSwitched, context));
-                    //
-                    //       print(isSwitched);
-                    //     });
-                    //   },
-                    //   activeTrackColor: Color(0xFF171C26),
-                    //   activeColor: Colors.white,
-                    // ),
                   ],
                 ),
               ),
@@ -181,8 +169,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                 ),
                 child: Column(children: [
                   Card(
-                    child: TextField(
-                      onTap: () {},
+                    child: TextFormField(
+                      onTap: () {
+                        showSearch(
+                          context: context,
+                          delegate: CustomSearchDelegate(),
+                        );
+                      },
+                      readOnly: true,
                       decoration: InputDecoration(
                           prefixIcon: Icon(
                             Icons.search,
@@ -190,55 +184,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                           ),
                           hintText: 'Search...',
                           hintStyle: Theme.of(context).textTheme.subtitle1),
-                      onChanged: (val) {
-                        setState(() {
-                          name = val.isEmpty ? " " : val;
-                        });
-                      },
+                      // onChanged: (val) {
+                      //   setState(() {
+                      //     name = val.isEmpty ? " " : val;
+                      //   });
+                      // },
                     ),
                   ),
                 ]),
-              ),
-              Expanded(
-                child: StreamBuilder<QuerySnapshot>(
-                  stream: Firestore.instance
-                      .collection('users')
-                      .document(id)
-                      .collection('Notes')
-                      .where("searchKey",
-                          isEqualTo: name.substring(0, 1).toUpperCase())
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    return (snapshot.connectionState == ConnectionState.waiting)
-                        ? Center(child: CircularProgressIndicator())
-                        : ListView.builder(
-                            itemCount: snapshot.data.documents.length,
-                            itemBuilder: (context, index) {
-                              DocumentSnapshot doc =
-                                  snapshot.data.documents[index];
-                              String colorString =
-                                  doc['color'].toString(); // Color(0x12345678)
-                              String valueString = colorString
-                                  .split('(0x')[1]
-                                  .split(')')[0]; // kind of hacky..
-                              int value = int.parse(valueString, radix: 16);
-                              Color otherColor = new Color(value);
-                              return Container(
-                                padding: const EdgeInsets.all(10),
-                                margin: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: otherColor == null
-                                      ? Colors.lightBlueAccent.withOpacity(0.1)
-                                      : otherColor,
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ),
-                                child:
-                                    Text(index.toString() + '.' + doc['title']),
-                              );
-                            },
-                          );
-                  },
-                ),
               ),
               Expanded(
                 flex: 2,
@@ -272,16 +225,23 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                       } else if (snapshot.data.documents.isNotEmpty) {
                         return StaggeredGridView.countBuilder(
                           itemBuilder: (context, int index) {
-                            var doc = snapshot.data.documents[index];
+                            QuillController _controller =
+                                new QuillController.basic();
 
+                            var doc = snapshot.data.documents[index];
+                            var myJSON = jsonDecode(doc['content']);
+                            _controller = new QuillController(
+                                document: Document.fromJson(myJSON),
+                                selection: TextSelection.collapsed(offset: 0));
                             String colorString =
                                 doc['color'].toString(); // Color(0x12345678)
+
                             String valueString = colorString
                                 .split('(0x')[1]
                                 .split(')')[0]; // kind of hacky..
                             int value = int.parse(valueString, radix: 16);
                             Color otherColor = new Color(value);
-                            print(doc['id']);
+
                             return InkWell(
                               onTap: () {
                                 setState(() {
@@ -298,12 +258,14 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                   down.content = doc['content'];
                                   down.color = doc['color'];
                                   down.date = dateTime;
-                                  print(updateController.upateNoteModel.title);
+                                  print('Color Tap: ' +
+                                      updateController.upateNoteModel.color
+                                          .toString());
 
                                   updateController.update();
                                 });
 
-                                Get.to(NoteEditor());
+                                Get.to(HomePage());
                               },
                               child: Container(
                                 padding: const EdgeInsets.all(10),
@@ -358,19 +320,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
 
                                                 updateController.update();
 
-                                                Get.to(NoteEditor());
+                                                Get.to(HomePage());
                                                 break;
                                               case 'Delete':
                                                 Database()
                                                     .deleteNotes(doc['id']);
                                                 break;
-                                              case 'Share':
-                                                break;
+                                              // case 'Share':
+                                              //   break;
                                             }
                                           },
                                           itemBuilder: (BuildContext context) {
-                                            return {'Edit', 'Delete', 'Share'}
-                                                .map((String choice) {
+                                            return {
+                                              'Edit',
+                                              'Delete',
+                                            }.map((String choice) {
                                               return PopupMenuItem<String>(
                                                 value: choice,
                                                 child: Text(
@@ -392,7 +356,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
                                       height: 5,
                                     ),
                                     Expanded(
-                                      child: Text(doc['content'],
+                                      child: Text(
+                                          _controller.document.toPlainText(),
                                           maxLines: 3,
                                           softWrap: true,
                                           overflow: TextOverflow.ellipsis,

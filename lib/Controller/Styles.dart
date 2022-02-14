@@ -25,6 +25,11 @@ class Styles {
       appBarTheme: AppBarTheme(
         elevation: 0.0,
       ),
+      inputDecorationTheme: InputDecorationTheme(
+        focusColor: isDarkTheme ? Color(0xff3A3A3B) : Color(0xff4285F4),
+        labelStyle:
+            Theme.of(context).textTheme.bodyText2.copyWith(color: Colors.blue),
+      ),
     );
   }
 }
