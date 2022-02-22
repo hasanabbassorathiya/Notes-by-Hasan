@@ -65,6 +65,7 @@ class AuthController extends GetxController {
   Future MyProfileUpdate(
       {String name, String email, String password, String url}) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
     try {
       // if (email != null && email.isNotEmpty) {
       //   userResult.user.updateEmail(email);
@@ -209,5 +210,17 @@ class AuthController extends GetxController {
   Future<void> updatePassword(String password) async {
     var firebaseUser = await _auth.currentUser();
     firebaseUser.updatePassword(password);
+  }
+
+  Future resetPassword({String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email);
+      return Get.snackbar(
+          'Success', 'Please check your email for the instructions.',
+          snackPosition: SnackPosition.BOTTOM);
+    } on PlatformException catch (e) {
+      return Get.snackbar('Error', e.message,
+          snackPosition: SnackPosition.BOTTOM);
+    }
   }
 }

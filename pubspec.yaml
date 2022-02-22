@@ -36,6 +36,7 @@ dependencies:
   flutter_quill:
   image_picker: 0.6.7+22
   share_files_and_screenshot_widgets:
+  flutter_email_sender: ^4.0.0
 
 
 

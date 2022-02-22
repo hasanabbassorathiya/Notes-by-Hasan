@@ -129,301 +129,309 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin {
             Get.to(HomePage());
           },
         ),
-        body: SmartRefresher(
-          controller: _refreshController,
-          physics: BouncingScrollPhysics(),
-          onRefresh: () async {
-            if (mounted) setState(() {});
-            await getData();
+        body: Container(
+          padding: const EdgeInsets.all(10),
+          child: SmartRefresher(
+            controller: _refreshController,
+            physics: BouncingScrollPhysics(),
+            onRefresh: () async {
+              if (mounted) setState(() {});
+              await getData();
 
-            _refreshController.refreshCompleted();
-          },
-          onLoading: () async {
-            if (mounted) setState(() {});
-            await getData();
-            _refreshController.loadFailed();
-          },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        'Hello, ' + "$fullname",
-                        style: Theme.of(context).textTheme.headline5,
+              _refreshController.refreshCompleted();
+            },
+            onLoading: () async {
+              if (mounted) setState(() {});
+              await getData();
+              _refreshController.loadFailed();
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          'Hello, ' + "$fullname",
+                          style: Theme.of(context).textTheme.headline5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 20,
+                  ),
+                  child: Column(children: [
+                    Card(
+                      child: TextFormField(
+                        onTap: () {
+                          showSearch(
+                            context: context,
+                            delegate: CustomSearchDelegate(),
+                          );
+                        },
+                        readOnly: true,
+                        decoration: InputDecoration(
+                            prefixIcon: Icon(
+                              Icons.search,
+                              color: isSwitched ? Colors.white : Colors.black,
+                            ),
+                            hintText: 'Search...',
+                            hintStyle: Theme.of(context).textTheme.subtitle1),
+                        // onChanged: (val) {
+                        //   setState(() {
+                        //     name = val.isEmpty ? " " : val;
+                        //   });
+                        // },
                       ),
                     ),
-                  ],
+                  ]),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: 30,
-                  right: 30,
-                  top: 10,
-                  bottom: 20,
-                ),
-                child: Column(children: [
-                  Card(
-                    child: TextFormField(
-                      onTap: () {
-                        showSearch(
-                          context: context,
-                          delegate: CustomSearchDelegate(),
-                        );
-                      },
-                      readOnly: true,
-                      decoration: InputDecoration(
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: isSwitched ? Colors.white : Colors.black,
-                          ),
-                          hintText: 'Search...',
-                          hintStyle: Theme.of(context).textTheme.subtitle1),
-                      // onChanged: (val) {
-                      //   setState(() {
-                      //     name = val.isEmpty ? " " : val;
-                      //   });
-                      // },
-                    ),
-                  ),
-                ]),
-              ),
-              Expanded(
-                flex: 2,
-                child: StreamBuilder<QuerySnapshot>(
-                    stream: stream,
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              backgroundColor:
-                                  isSwitched ? Colors.white : Colors.black,
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Text(
-                              "Loading Notes...",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline5
-                                  .copyWith(
-                                      color: isSwitched
-                                          ? Colors.white
-                                          : Colors.black),
-                            ),
-                          ],
-                        );
-                      } else if (snapshot.data.documents.isNotEmpty) {
-                        return StaggeredGridView.countBuilder(
-                          itemBuilder: (context, int index) {
-                            QuillController _controller =
-                                new QuillController.basic();
-
-                            var doc = snapshot.data.documents[index];
-                            var myJSON = jsonDecode(doc['content']);
-                            _controller = new QuillController(
-                                document: Document.fromJson(myJSON),
-                                selection: TextSelection.collapsed(offset: 0));
-                            String colorString =
-                                doc['color'].toString(); // Color(0x12345678)
-
-                            String valueString = colorString
-                                .split('(0x')[1]
-                                .split(')')[0]; // kind of hacky..
-                            int value = int.parse(valueString, radix: 16);
-                            Color otherColor = new Color(value);
-
-                            return InkWell(
-                              onTap: () {
-                                setState(() {
-                                  var down = Get.put<UpdateNoteController>(
-                                          UpdateNoteController())
-                                      .upateNoteModel;
-                                  Get.put<UpdateNoteController>(
-                                          UpdateNoteController())
-                                      .isUpdate
-                                      .value = true;
-                                  DateTime dateTime = doc["date"].toDate();
-                                  down.id = doc['id'].toString();
-                                  down.title = doc['title'];
-                                  down.content = doc['content'];
-                                  down.color = doc['color'];
-                                  down.date = dateTime;
-                                  print('Color Tap: ' +
-                                      updateController.upateNoteModel.color
-                                          .toString());
-
-                                  updateController.update();
-                                });
-
-                                Get.to(HomePage());
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: otherColor == null
-                                      ? Colors.lightBlueAccent.withOpacity(0.1)
-                                      : otherColor,
-                                  // borderRadius: BorderRadius.circular(30.0),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Text(
-                                            doc['title'],
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            softWrap: true,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .headline6,
-                                          ),
-                                          flex: 3,
-                                        ),
-                                        PopupMenuButton<String>(
-                                          onSelected: (value) {
-                                            switch (value) {
-                                              case 'Edit':
-                                                var down = Get.put<
-                                                            UpdateNoteController>(
-                                                        UpdateNoteController())
-                                                    .upateNoteModel;
-
-                                                Get.put<UpdateNoteController>(
-                                                        UpdateNoteController())
-                                                    .isUpdate
-                                                    .value = true;
-                                                DateTime dateTime =
-                                                    doc["date"].toDate();
-
-                                                down.id = doc['id'].toString();
-                                                down.title = doc['title'];
-                                                down.content = doc['content'];
-                                                down.color = doc['color'];
-                                                down.date = dateTime;
-
-                                                print(updateController
-                                                    .upateNoteModel.title);
-
-                                                updateController.update();
-
-                                                Get.to(HomePage());
-                                                break;
-                                              case 'Delete':
-                                                Database()
-                                                    .deleteNotes(doc['id']);
-                                                break;
-                                              // case 'Share':
-                                              //   break;
-                                            }
-                                          },
-                                          itemBuilder: (BuildContext context) {
-                                            return {
-                                              'Edit',
-                                              'Delete',
-                                            }.map((String choice) {
-                                              return PopupMenuItem<String>(
-                                                value: choice,
-                                                child: Text(
-                                                  choice,
-                                                  style: Theme.of(context)
-                                                      .textTheme
-                                                      .bodyText1,
-                                                ),
-                                              );
-                                            }).toList();
-                                          },
-                                        ),
-                                      ],
-                                    ),
-                                    Divider(
-                                      color: Colors.grey,
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                          _controller.document.toPlainText(),
-                                          maxLines: 3,
-                                          softWrap: true,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .headline6),
-                                    ),
-                                    Text(
-                                      _ago(doc['date']).toString(),
-                                      textAlign: TextAlign.right,
-                                      style:
-                                          Theme.of(context).textTheme.subtitle2,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          staggeredTileBuilder: (int index) =>
-                              new StaggeredTile.count(2, 2),
-                          //index.isEven ? 2 : 1.5
-                          mainAxisSpacing: 20.0,
-                          crossAxisSpacing: 5.0,
-                          itemCount: snapshot.data.documents.length,
-                          crossAxisCount: 4,
-                          padding: const EdgeInsets.all(10),
-                        );
-                      } else {
-                        return Container(
-                          child: Column(
+                Expanded(
+                  flex: 2,
+                  child: StreamBuilder<QuerySnapshot>(
+                      stream: stream,
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Flexible(
-                                child: Image.asset(
-                                  'assets/notes.png',
-                                  width: 250,
-                                  height: 250,
-                                ),
+                              CircularProgressIndicator(
+                                backgroundColor:
+                                    isSwitched ? Colors.white : Colors.black,
                               ),
                               SizedBox(
-                                height: 15,
+                                height: 20,
                               ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'Start creating  your own Notes by clicking on ',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headline6
-                                        .copyWith(fontSize: 16),
-                                  ),
-                                  Icon(
-                                    Icons.add_circle,
-                                    color: Theme.of(context).accentColor,
-                                  ),
-                                ],
+                              Text(
+                                "Loading Notes...",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headline5
+                                    .copyWith(
+                                        color: isSwitched
+                                            ? Colors.white
+                                            : Colors.black),
                               ),
                             ],
-                          ),
-                        );
-                      }
-                    }),
-              ),
-            ],
+                          );
+                        } else if (snapshot.data.documents.isNotEmpty) {
+                          return StaggeredGridView.countBuilder(
+                            itemBuilder: (context, int index) {
+                              QuillController _controller =
+                                  new QuillController.basic();
+
+                              var doc = snapshot.data.documents[index];
+                              var myJSON = jsonDecode(doc['content']);
+                              _controller = new QuillController(
+                                  document: Document.fromJson(myJSON),
+                                  selection:
+                                      TextSelection.collapsed(offset: 0));
+                              String colorString =
+                                  doc['color'].toString(); // Color(0x12345678)
+
+                              String valueString = colorString
+                                  .split('(0x')[1]
+                                  .split(')')[0]; // kind of hacky..
+                              int value = int.parse(valueString, radix: 16);
+                              Color otherColor = new Color(value);
+
+                              return InkWell(
+                                onTap: () {
+                                  setState(() {
+                                    var down = Get.put<UpdateNoteController>(
+                                            UpdateNoteController())
+                                        .upateNoteModel;
+                                    Get.put<UpdateNoteController>(
+                                            UpdateNoteController())
+                                        .isUpdate
+                                        .value = true;
+                                    DateTime dateTime = doc["date"].toDate();
+                                    down.id = doc['id'].toString();
+                                    down.title = doc['title'];
+                                    down.content = doc['content'];
+                                    down.color = doc['color'];
+                                    down.date = dateTime;
+                                    print('Color Tap: ' +
+                                        updateController.upateNoteModel.color
+                                            .toString());
+
+                                    updateController.update();
+                                  });
+
+                                  Get.to(HomePage());
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: otherColor == null
+                                        ? Colors.lightBlueAccent
+                                            .withOpacity(0.1)
+                                        : otherColor,
+                                    // borderRadius: BorderRadius.circular(30.0),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              doc['title'],
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                              softWrap: true,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .headline6,
+                                            ),
+                                            flex: 3,
+                                          ),
+                                          PopupMenuButton<String>(
+                                            onSelected: (value) {
+                                              switch (value) {
+                                                case 'Edit':
+                                                  var down = Get.put<
+                                                              UpdateNoteController>(
+                                                          UpdateNoteController())
+                                                      .upateNoteModel;
+
+                                                  Get.put<UpdateNoteController>(
+                                                          UpdateNoteController())
+                                                      .isUpdate
+                                                      .value = true;
+                                                  DateTime dateTime =
+                                                      doc["date"].toDate();
+
+                                                  down.id =
+                                                      doc['id'].toString();
+                                                  down.title = doc['title'];
+                                                  down.content = doc['content'];
+                                                  down.color = doc['color'];
+                                                  down.date = dateTime;
+
+                                                  print(updateController
+                                                      .upateNoteModel.title);
+
+                                                  updateController.update();
+
+                                                  Get.to(HomePage());
+                                                  break;
+                                                case 'Delete':
+                                                  Database()
+                                                      .deleteNotes(doc['id']);
+                                                  break;
+                                                // case 'Share':
+                                                //   break;
+                                              }
+                                            },
+                                            itemBuilder:
+                                                (BuildContext context) {
+                                              return {
+                                                'Edit',
+                                                'Delete',
+                                              }.map((String choice) {
+                                                return PopupMenuItem<String>(
+                                                  value: choice,
+                                                  child: Text(
+                                                    choice,
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyText1,
+                                                  ),
+                                                );
+                                              }).toList();
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      Divider(
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                            _controller.document.toPlainText(),
+                                            maxLines: 3,
+                                            softWrap: true,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .headline6),
+                                      ),
+                                      Text(
+                                        _ago(doc['date']).toString(),
+                                        textAlign: TextAlign.right,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .subtitle2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                            staggeredTileBuilder: (int index) =>
+                                new StaggeredTile.count(2, 2),
+                            //index.isEven ? 2 : 1.5
+                            mainAxisSpacing: 20.0,
+                            crossAxisSpacing: 5.0,
+                            itemCount: snapshot.data.documents.length,
+                            crossAxisCount: 4,
+                            padding: const EdgeInsets.all(10),
+                          );
+                        } else {
+                          return Container(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Flexible(
+                                  child: Image.asset(
+                                    'assets/notes.png',
+                                    width: 250,
+                                    height: 250,
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 15,
+                                ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      'Start creating  your own Notes by clicking on ',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headline6
+                                          .copyWith(fontSize: 16),
+                                    ),
+                                    Icon(
+                                      Icons.add_circle,
+                                      color: Theme.of(context).accentColor,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+                      }),
+                ),
+              ],
+            ),
           ),
         ),
       ),

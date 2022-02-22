@@ -42,35 +42,43 @@ class _NavigationDrawerWidgetState extends State<NavigationDrawerWidget> {
                 color: Colors.white12,
                 child: buildHeader(isCollapsed),
               ),
-              const SizedBox(height: 24),
-              StatefulBuilder(builder: (context, snapshot) {
-                return buildList(items: [
-                  DrawerItem(title: 'Dashboard', icon: Icons.notes_rounded),
-                  DrawerItem(
-                      title: 'My Profile', icon: Icons.emoji_people_outlined),
-                  !Get.isDarkMode
-                      ? DrawerItem(
-                          title: 'Dark Mode',
-                          icon: (Icons.wb_sunny),
-                        )
-                      : DrawerItem(
-                          title: 'Light Mode',
-                          icon: (Icons.nights_stay_outlined),
-                        ),
-                  //DrawerItem(title: 'Performance & Optimization', icon: Icons.build),
-                ], isCollapsed: isCollapsed);
-              }),
-              const SizedBox(height: 24),
-              Divider(color: Colors.white70),
-              const SizedBox(height: 24),
-              buildList(
-                indexOffset: itemsFirst.length,
-                items: itemsSecond,
-                isCollapsed: isCollapsed,
+              SizedBox(height: Get.height * 0.020),
+              Expanded(
+                child: Column(
+                  children: [
+                    StatefulBuilder(builder: (context, snapshot) {
+                      return buildList(items: [
+                        DrawerItem(
+                            title: 'Dashboard', icon: Icons.notes_rounded),
+                        DrawerItem(
+                            title: 'My Profile',
+                            icon: Icons.emoji_people_outlined),
+                        !Get.isDarkMode
+                            ? DrawerItem(
+                                title: 'Dark Mode',
+                                icon: (Icons.wb_sunny),
+                              )
+                            : DrawerItem(
+                                title: 'Light Mode',
+                                icon: (Icons.nights_stay_outlined),
+                              ),
+                        //DrawerItem(title: 'Performance & Optimization', icon: Icons.build),
+                      ], isCollapsed: isCollapsed);
+                    }),
+                    SizedBox(height: Get.height * 0.020),
+                    Divider(color: Colors.white70),
+                    SizedBox(height: Get.height * 0.020),
+                    buildList(
+                      indexOffset: itemsFirst.length,
+                      items: itemsSecond,
+                      isCollapsed: isCollapsed,
+                    ),
+                    Spacer(),
+                    buildCollapseIcon(context, isCollapsed),
+                  ],
+                ),
               ),
-              Spacer(),
-              buildCollapseIcon(context, isCollapsed),
-              const SizedBox(height: 12),
+              // SizedBox(height: Get.height * 0.020),
             ],
           ),
         ),

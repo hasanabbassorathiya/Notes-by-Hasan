@@ -88,9 +88,7 @@ class _HomePageState extends State<HomePage> {
   updateNote() async {
     var up =
         Get.put<UpdateNoteController>(UpdateNoteController()).upateNoteModel;
-    setState(() {
-      changeColor(getcolor(up.color));
-    });
+
     try {
       if ((_titleTextController.text.isNotEmpty) &&
           (!_controller.document.isEmpty())) {

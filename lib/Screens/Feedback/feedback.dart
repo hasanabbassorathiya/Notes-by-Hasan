@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:notes/components/navigation_drawer_widget.dart';
 
@@ -64,164 +66,160 @@ class _FeedbackFormState extends State<FeedbackForm> {
                 child: SingleChildScrollView(
                   physics: BouncingScrollPhysics(),
                   child: Container(
-                    padding: const EdgeInsets.all(20.0),
+                    margin: EdgeInsets.all(15),
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Get.isDarkMode ? Colors.black : Colors.white),
                     child: Column(
                       children: [
                         Builder(
                             builder: (context) => Form(
                                   key: _formKey,
                                   child: Container(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        children: [
-                                          TextFormField(
-                                            focusNode: _firstnameFocusNode,
-                                            keyboardType: TextInputType.name,
-                                            controller: firstname,
-                                            decoration: InputDecoration(
-                                              labelText: 'Full name',
-                                              labelStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.normal,
-                                              ),
-                                              focusColor: Colors.white,
-                                              enabledBorder:
-                                                  const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderSide: const BorderSide(
-                                                    color: Colors.white,
-                                                    width: 0.0),
-                                              ),
-                                              focusedBorder:
-                                                  new OutlineInputBorder(
-                                                borderSide: const BorderSide(
-                                                    color: Colors.white,
-                                                    width: 0.0),
-                                              ),
-                                              fillColor: Colors.black54,
-                                              filled: true,
-                                              border:
-                                                  const OutlineInputBorder(),
-                                            ),
-                                            style: TextStyle(
+                                    child: Column(
+                                      children: [
+                                        TextFormField(
+                                          focusNode: _firstnameFocusNode,
+                                          keyboardType: TextInputType.name,
+                                          controller: firstname,
+                                          decoration: InputDecoration(
+                                            labelText: 'Full name',
+                                            labelStyle: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.normal,
                                             ),
-                                            onEditingComplete: () {
-                                              _firstnameFocusNode
-                                                  .requestFocus();
-                                            },
-                                            validator: (value) {
-                                              if (value.isEmpty) {
-                                                return 'Please enter your full name.';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                          ),
-                                          SizedBox(
-                                            height: 5,
-                                          ),
-                                          TextFormField(
-                                            focusNode: _emailFocusNode,
-                                            controller: email,
-                                            onEditingComplete: () {
-                                              _emailFocusNode.requestFocus();
-                                            },
-                                            decoration: InputDecoration(
-                                              labelText: 'E-mail',
-                                              labelStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.normal,
-                                              ),
-                                              focusColor: Colors.white,
-                                              enabledBorder:
-                                                  const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderSide: const BorderSide(
-                                                    color: Colors.white,
-                                                    width: 0.0),
-                                              ),
-                                              focusedBorder:
-                                                  new OutlineInputBorder(
-                                                borderSide: const BorderSide(
-                                                    color: Colors.white,
-                                                    width: 0.0),
-                                              ),
-                                              fillColor: Colors.black54,
-                                              filled: true,
-                                              border:
-                                                  const OutlineInputBorder(),
+                                            focusColor: Colors.white,
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                              // width: 0.0 produces a thin "hairline" border
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white,
+                                                  width: 0.0),
                                             ),
-                                            style: TextStyle(
+                                            focusedBorder:
+                                                new OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white,
+                                                  width: 0.0),
+                                            ),
+                                            fillColor: Colors.black54,
+                                            filled: true,
+                                            border: const OutlineInputBorder(),
+                                          ),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          onEditingComplete: () {
+                                            _firstnameFocusNode.requestFocus();
+                                          },
+                                          validator: (value) {
+                                            if (value.isEmpty) {
+                                              return 'Please enter your full name.';
+                                            } else {
+                                              return null;
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        TextFormField(
+                                          focusNode: _emailFocusNode,
+                                          controller: email,
+                                          onEditingComplete: () {
+                                            _emailFocusNode.requestFocus();
+                                          },
+                                          decoration: InputDecoration(
+                                            labelText: 'E-mail',
+                                            labelStyle: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.normal,
                                             ),
-                                            validator: (value) {
-                                              if (value.isEmpty) {
-                                                return 'Please enter your E-mail.';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
-                                          ),
-                                          SizedBox(
-                                            height: 5,
-                                          ),
-                                          TextFormField(
-                                            onEditingComplete: () {
-                                              _BodymessageFocusNode.unfocus();
-                                            },
-                                            focusNode: _BodymessageFocusNode,
-                                            textInputAction:
-                                                TextInputAction.newline,
-                                            keyboardType:
-                                                TextInputType.multiline,
-                                            controller: Bodymessage,
-                                            maxLines: 300,
-                                            minLines: 20,
-                                            decoration: InputDecoration(
-                                              labelText: 'Message',
-                                              focusColor: Colors.white,
-                                              enabledBorder:
-                                                  const OutlineInputBorder(
-                                                // width: 0.0 produces a thin "hairline" border
-                                                borderSide: const BorderSide(
-                                                    color: Colors.white,
-                                                    width: 0.0),
-                                              ),
-                                              focusedBorder:
-                                                  new OutlineInputBorder(
-                                                borderSide: const BorderSide(
-                                                    color: Colors.white,
-                                                    width: 0.0),
-                                              ),
-                                              fillColor: Colors.black54,
-                                              filled: true,
-                                              border:
-                                                  const OutlineInputBorder(),
-                                              labelStyle: TextStyle(
-                                                color: Colors.white,
-                                                fontWeight: FontWeight.normal,
-                                              ),
-                                              alignLabelWithHint: true,
+                                            focusColor: Colors.white,
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                              // width: 0.0 produces a thin "hairline" border
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white,
+                                                  width: 0.0),
                                             ),
-                                            style: TextStyle(
+                                            focusedBorder:
+                                                new OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white,
+                                                  width: 0.0),
+                                            ),
+                                            fillColor: Colors.black54,
+                                            filled: true,
+                                            border: const OutlineInputBorder(),
+                                          ),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          validator: (value) {
+                                            if (value.isEmpty) {
+                                              return 'Please enter your E-mail.';
+                                            } else {
+                                              return null;
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(
+                                          height: 5,
+                                        ),
+                                        TextFormField(
+                                          onEditingComplete: () {
+                                            _BodymessageFocusNode.unfocus();
+                                          },
+                                          focusNode: _BodymessageFocusNode,
+                                          textInputAction:
+                                              TextInputAction.newline,
+                                          keyboardType: TextInputType.multiline,
+                                          controller: Bodymessage,
+                                          maxLines: 300,
+                                          minLines: 20,
+                                          decoration: InputDecoration(
+                                            labelText: 'Message',
+                                            focusColor: Colors.white,
+                                            enabledBorder:
+                                                const OutlineInputBorder(
+                                              // width: 0.0 produces a thin "hairline" border
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white,
+                                                  width: 0.0),
+                                            ),
+                                            focusedBorder:
+                                                new OutlineInputBorder(
+                                              borderSide: const BorderSide(
+                                                  color: Colors.white,
+                                                  width: 0.0),
+                                            ),
+                                            fillColor: Colors.black54,
+                                            filled: true,
+                                            border: const OutlineInputBorder(),
+                                            labelStyle: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.normal,
                                             ),
-                                            validator: (value) {
-                                              if (value.isEmpty) {
-                                                return 'Please enter your feedback.';
-                                              } else {
-                                                return null;
-                                              }
-                                            },
+                                            alignLabelWithHint: true,
                                           ),
-                                          SizedBox(height: 10),
-                                        ],
-                                      ),
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.normal,
+                                          ),
+                                          validator: (value) {
+                                            if (value.isEmpty) {
+                                              return 'Please enter your feedback.';
+                                            } else {
+                                              return null;
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(height: 10),
+                                      ],
                                     ),
                                   ),
                                 )),
@@ -240,6 +238,14 @@ class _FeedbackFormState extends State<FeedbackForm> {
                               isLoading = true;
                             });
                             if (_formKey.currentState.validate()) {
+                              final Email email = Email(
+                                body: '${Bodymessage.text.toString()}',
+                                subject: 'Feedback for Notes App',
+                                recipients: ['hasanabbassorathiya@gmail.com'],
+                                isHTML: false,
+                              );
+
+                              await FlutterEmailSender.send(email);
                             } else {
                               setState(() {
                                 isLoading = false;
